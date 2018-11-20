@@ -6,5 +6,7 @@ public interface BloomFilter<T> {
 
     public boolean contains(T value);
 
+    public String toBloomString();
+
 
 }

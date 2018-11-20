@@ -2,12 +2,12 @@ package com.nomanmulla.hash.functions;
 
 import net.openhft.hashing.LongHashFunction;
 
-public class Murmur3Hash<T> implements HashFunction<T> {
+public class FarmHash<T> implements HashFunction {
 
 
     @Override
-    public long hash(T value) {
+    public long hash(Object value) {
         byte[] bytes = convertToByte(value);
-        return LongHashFunction.murmur_3().hashBytes(bytes);
+        return LongHashFunction.farmNa().hashBytes(bytes);
     }
 }

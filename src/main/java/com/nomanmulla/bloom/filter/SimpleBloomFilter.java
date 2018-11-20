@@ -2,40 +2,45 @@ package com.nomanmulla.bloom.filter;
 
 
 import com.nomanmulla.hash.functions.HashFunction;
-import com.nomanmulla.hash.functions.Murmur3Hash;
 import com.nomanmulla.utils.HashUtil;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
+import java.util.List;
 
 public class SimpleBloomFilter<T> implements BloomFilter<T> {
 
 
-    protected BitSet bloomSet[];
+    protected BitSet bloomSet;
     protected static long expectedElements;
     protected double expectedFalsePositiveRate;
-    protected static HashFunction<String> hashFunction;
+    protected List<HashFunction<T>> hashFunctionList;
 
-    SimpleBloomFilter(long expectedElements,double expectedFalsePositiveRate){
+    public SimpleBloomFilter(long expectedElements, double expectedFalsePositiveRate, List<HashFunction<T>> hashFunctionList) {
         this.expectedElements = expectedElements;
         this.expectedFalsePositiveRate = expectedFalsePositiveRate;
-        bloomSet = new BitSet[(int)expectedElements];
-        hashFunction = new Murmur3Hash<>();
+        bloomSet = new BitSet((int) expectedElements);
+        this.hashFunctionList = hashFunctionList;
     }
 
 
     public void add(T value) {
+        hashFunctionList.forEach(tHashFunction -> {
+            long index = HashUtil.convertWithinExpectedSize(tHashFunction.hash(value), expectedElements);
+            bloomSet.set((int) index);
+        });
 
     }
+
 
     public boolean contains(T value) {
-        return false;
+        return hashFunctionList.stream().filter(tHashFunction -> !bloomSet.get((int) HashUtil.convertWithinExpectedSize(tHashFunction.hash(value), expectedElements))
+        ).count() >= 1 ? false : true;
     }
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        String abc= "abcdefg";
-        SimpleBloomFilter<String> simpleBloomFilter = new SimpleBloomFilter<>(5L,0.1);
-        System.out.println(HashUtil.convertWithinExpectedSize(hashFunction.hash(abc),expectedElements));
+    @Override
+    public String toBloomString() {
+        return bloomSet.toString();
     }
+
+
 }
