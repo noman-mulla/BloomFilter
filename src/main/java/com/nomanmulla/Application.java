@@ -5,6 +5,7 @@ import com.nomanmulla.bloom.filter.SimpleBloomFilter;
 import com.nomanmulla.hash.functions.HashFunction;
 import com.nomanmulla.hash.functions.HashFunctions;
 import com.nomanmulla.utils.HashUtil;
+import com.nomanmulla.utils.csv.CSVWriter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
@@ -15,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class Application {
 
+    private static List<String> csvGenList;
 
     public static void main(String[] args) {
         int inputSize = 9;
@@ -23,10 +25,14 @@ public class Application {
         for (int i = 0; i < multipliers.length; i++) {
             inputSizes[i] = inputSize * multipliers[i];
         }
+        //getting csv writer
+        CSVWriter csvWriter = CSVWriter.getInstance();
+        csvWriter.createCSVFile();
         for (int size : inputSizes) {
             log.info("For Size {} ", size);
             runFor1Combination(size);
             runFor2Combination(size);
+            csvWriter.completePrint();
         }
     }
 
@@ -50,6 +56,10 @@ public class Application {
                 hashComboString.append(hash + " ");
             }
             log.info("For Hash Combo {} ", hashComboString.toString());
+            csvGenList = new ArrayList<String>();
+            csvGenList.add("9");
+            csvGenList.add(String.valueOf(size));
+            csvGenList.add(hashComboString.toString());
             BloomFilter<String> bloomFilter = new SimpleBloomFilter<>(size, 0.1, hashFunctionList);
             readAndTest(bloomFilter);
         });
@@ -57,7 +67,6 @@ public class Application {
 
     private static void readAndTest(BloomFilter<String> bloomFilter) {
         readInputAndAdd(bloomFilter);
-        ;
         log.info(bloomFilter.toBloomString());
         log.info("False Positive Rate Testing");
         testForFalsePositive(bloomFilter);
@@ -86,8 +95,12 @@ public class Application {
             });
             log.info("False Nos {} ", falseNos.get());
             log.info("Test Lines {} ", testLines.get());
+            csvGenList.add(String.valueOf(testLines.get()));
+            csvGenList.add(String.valueOf(falseNos.get()));
             double falsePositiveRate = falseNos.doubleValue() / testLines.doubleValue();
             log.info("False positive rate {} ", falsePositiveRate);
+            csvGenList.add(String.valueOf(falsePositiveRate));
+            CSVWriter.getInstance().writeLine(csvGenList);
         }
 
     }
