@@ -19,9 +19,10 @@ public class Application {
     private static List<String> csvGenList;
 
     public static void main(String[] args) {
-        int inputSize = 9;
-        int[] inputSizes = new int[3];
-        int[] multipliers = {2, 5, 10};
+        int inputSize = 70000;
+
+        int[] multipliers = {10};
+        int[] inputSizes = new int[multipliers.length];
         for (int i = 0; i < multipliers.length; i++) {
             inputSizes[i] = inputSize * multipliers[i];
         }
@@ -30,20 +31,15 @@ public class Application {
         csvWriter.createCSVFile();
         for (int size : inputSizes) {
             log.info("For Size {} ", size);
-            runFor1Combination(size);
-            runFor2Combination(size);
+            //runForCombination(size,1);
+            //runForCombination(size,2);
+            runForCombination(size,3);
             csvWriter.completePrint();
         }
     }
 
-    private static void runFor2Combination(int size) {
-        List<String[]> hashCombinations = HashUtil.getCombination(HashFunctions.values(), HashFunctions.values().length, 2);
-        commonGenerator(hashCombinations, size);
-    }
-
-
-    private static void runFor1Combination(int size) {
-        List<String[]> hashCombinations = HashUtil.getCombination(HashFunctions.values(), HashFunctions.values().length, 1);
+    private static void runForCombination(int size,int hashCombo) {
+        List<String[]> hashCombinations = HashUtil.getCombination(HashFunctions.values(), HashFunctions.values().length, hashCombo);
         commonGenerator(hashCombinations, size);
     }
 
@@ -57,7 +53,7 @@ public class Application {
             }
             log.info("For Hash Combo {} ", hashComboString.toString());
             csvGenList = new ArrayList<String>();
-            csvGenList.add("9");
+            csvGenList.add(String.valueOf(size));
             csvGenList.add(String.valueOf(size));
             csvGenList.add(hashComboString.toString());
             BloomFilter<String> bloomFilter = new SimpleBloomFilter<>(size, 0.1, hashFunctionList);
